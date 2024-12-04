@@ -3,12 +3,16 @@ import org.example.CarManager;
 import org.example.CarService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -26,34 +30,32 @@ public class CarManagerTest {
     @InjectMocks
     private CarManager carManager;
 
-    @Test
-    public void testGetCarNameById_ValidBoundary(){
-        System.out.println("Test 1: testGetCarNameById_ValidBoundary");
+    @ParameterizedTest
+    @MethodSource("paramsForTestBoundary")
+    public void testGetCarNameById_BoundaryValues(int carId, String expectedCarName) {
+        System.out.println("Testing with Car ID: " + carId);
 
-        when(carService.getCar(1)).thenReturn(new Car("Toyota", 1));
-        String carName = carManager.getCarNameById(1);
-        System.out.println("Car name for ID 1: " + carName);
-        assertEquals("Toyota", carName);
+        if (carId == 1) {
+            when(carService.getCar(carId)).thenReturn(new Car("Toyota", carId));
+        } else if (carId == 1000) {
+            when(carService.getCar(carId)).thenReturn(new Car("Mercedes", carId));
+        } else {
+            when(carService.getCar(carId)).thenReturn(null);
+        }
 
-        when(carService.getCar(1000)).thenReturn(new Car("Mercedes", 1000));
-        carName = carManager.getCarNameById(1000);
-        System.out.println("Car name for ID 1000: " + carName);
-        assertEquals("Mercedes", carName);
+        String carName = carManager.getCarNameById(carId);
+        System.out.println("Returned car name for ID " + carId + ": " + carName);
+
+        assertEquals(expectedCarName, carName);
     }
 
-    @Test
-    public void testGetCarNameById_InvalidBoundary(){
-        System.out.println("Test 2: testGetCarNameById_InvalidBoundary");
-
-        when(carService.getCar(0)).thenReturn(null);
-        String carName = carManager.getCarNameById(0);
-        System.out.println("Car name for ID 0: " + carName);
-        assertNull(carName);
-
-        when(carService.getCar(-1)).thenReturn(null);
-        String carName2 = carManager.getCarNameById(-1);
-        System.out.println("Car name for ID -1: " + carName2);
-        assertNull(carName2);
+    private static Stream<Arguments> paramsForTestBoundary() {
+        return Stream.of(
+                Arguments.of(0, null), // Alsó határ alatt
+                Arguments.of(1, "Toyota"), //Alsó határon belül
+                Arguments.of(1000, "Mercedes"), //Felső határon belül
+                Arguments.of(1001, null) //Felső határon kívül
+        );
     }
 
     @Test
@@ -65,10 +67,10 @@ public class CarManagerTest {
         System.out.println("Car name for valid ID 5: " + carName);
         assertEquals("BMW", carName);
 
-        when(carService.getCar(9999)).thenReturn(null);
-        String carName2 = carManager.getCarNameById(9999);
-        System.out.println("Car name for invalid ID 9999: " + carName2);
-        assertNull(carManager.getCarNameById(9999));
+        when(carService.getCar(1001)).thenReturn(null);
+        String carName2 = carManager.getCarNameById(1001);
+        System.out.println("Car name for invalid ID 1001: " + carName2);
+        assertNull(carManager.getCarNameById(1001));
     }
 
     @Test
@@ -123,7 +125,6 @@ public class CarManagerTest {
     public void testGetAllCars_EmptyList() {
         System.out.println("Test 8: testGetAllCars_EmptyList");
 
-        // Mocking an empty list returned by carService
         when(carService.getAllCars()).thenReturn(Arrays.asList());
 
         List<Car> cars = carManager.getAllCars();
