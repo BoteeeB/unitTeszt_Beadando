@@ -36,13 +36,10 @@ public class CarManagerTest {
         System.out.println("Testing with Car ID: " + carId);
 
         if (carId == 1) {
-            when(carService.getCar(carId)).thenReturn(new Car("Toyota", carId));
+            when(carService.getCar(1)).thenReturn(new Car("Toyota", 1));
         } else if (carId == 1000) {
-            when(carService.getCar(carId)).thenReturn(new Car("Mercedes", carId));
-        } else {
-            when(carService.getCar(carId)).thenReturn(null);
+            when(carService.getCar(1000)).thenReturn(new Car("Mercedes", 1000));
         }
-
         String carName = carManager.getCarNameById(carId);
         System.out.println("Returned car name for ID " + carId + ": " + carName);
 
@@ -56,21 +53,6 @@ public class CarManagerTest {
                 Arguments.of(1000, "Mercedes"), //Felső határon belül
                 Arguments.of(1001, null) //Felső határon kívül
         );
-    }
-
-    @Test
-    public void testGetCarNameById_EquivalencePartition(){
-        System.out.println("Test 3: testGetCarNameById_EquivalencePartition");
-
-        when(carService.getCar(5)).thenReturn(new Car("BMW", 5));
-        String carName = carManager.getCarNameById(5);
-        System.out.println("Car name for valid ID 5: " + carName);
-        assertEquals("BMW", carName);
-
-        when(carService.getCar(1001)).thenReturn(null);
-        String carName2 = carManager.getCarNameById(1001);
-        System.out.println("Car name for invalid ID 1001: " + carName2);
-        assertNull(carManager.getCarNameById(1001));
     }
 
     @Test

@@ -11,8 +11,12 @@ public class CarManager {
     }
 
     public String getCarNameById(int id){
-        Car car = carService.getCar(id);
-        return car != null ? car.getName() : null;
+        if (id > 0 && id <= 1000){
+            Car car = carService.getCar(id);
+            return car != null ? car.getName() : null;
+        }
+        return null;
+
     }
 
     public void updateCarName(int id, String newName){
